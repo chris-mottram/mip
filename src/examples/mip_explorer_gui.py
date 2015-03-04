@@ -160,7 +160,7 @@ class SoundWindow(Toplevel):
         button68.pack(side = LEFT)
         soundsFrame8 = Frame(soundFrame)
         soundsFrame8.pack()
-        button72 = Button(soundsFrame8, text ="Feck", command = lambda: self.soundCallback(72))
+        button72 = Button(soundsFrame8, text ="Lets trick", command = lambda: self.soundCallback(72))
         button72.pack(side = LEFT)
         button73 = Button(soundsFrame8, text ="duh duh duh (cage escape sound)", command = lambda: self.soundCallback(73))
         button73.pack(side = LEFT)
@@ -356,6 +356,268 @@ class EyesWindow(Toplevel):
         # all on
         mip.setHeadLed(0x1,0x1,0x1,0x1)
 
+class ChestWindow(Toplevel):
+    """
+    Class to manage and control the chest LED.
+    """
+    global updateChestLed
+    updateChestLed = 0
+
+    def __init__(self, master=None):
+        Toplevel.__init__(self, master)
+        self.startChestWindow()
+
+    def getRedValue(self):
+        """
+        Get the Red Value from the red Entry / redVar,
+        and convert it into a float
+        Returns the red value
+        """
+        redString = self.redVar.get()
+        try:
+            redValue = float(redString)
+        except ValueError:
+            print "ChestWindow: Red Value not a valid float:Changing to 0.0"
+            self.redVar.set("0.0")
+            redValue = 0.0
+        return redValue
+
+    def getGreenValue(self):
+        """
+        Get the Green Value from the green Entry / redVar,
+        and convert it into a float.
+        Returns the green value
+        """
+        greenString = self.greenVar.get()
+        try:
+            greenValue = float(greenString)
+        except ValueError:
+            print "ChestWindow: Green Value not a valid float:Changing to 0.0"
+            self.greenVar.set("0.0")
+            greenValue = 0.0
+        return greenValue
+
+    def getBlueValue(self):
+        """
+        Get the Blue Value from the blue Entry / blueVar,
+        and convert it into a float
+        Returns the blue value
+        """
+        blueString = self.blueVar.get()
+        try:
+            blueValue = float(blueString)
+        except ValueError:
+            print "ChestWindow: Blue Value not a valid float:Changing to 0.0"
+            self.blueVar.set("0.0")
+            blueValue = 0.0
+        return blueValue
+
+    def getIncRedValue(self):
+        """
+        Get the Red increment Value from the red increment Entry / incRedVar,
+        and convert it into a float
+        Returns the red increment value
+        """
+        redString = self.incRedVar.get()
+        try:
+            incRedValue = float(redString)
+        except ValueError:
+            print "ChestWindow: Red Increment Value not a valid float:Changing to 0.0"
+            self.incRedVar.set("0.0")
+            incRedValue = 0.0
+        return incRedValue
+
+    def getIncGreenValue(self):
+        """
+        Get the Green increment Value from the green increment Entry / incGreenVar,
+        and convert it into a float
+        Returns the green increment value
+        """
+        greenString = self.incGreenVar.get()
+        try:
+            incGreenValue = float(greenString)
+        except ValueError:
+            print "ChestWindow: Green Increment Value not a valid float:Changing to 0.0"
+            self.incGreenVar.set("0.0")
+            incGreenValue = 0.0
+        return incGreenValue
+
+    def getIncBlueValue(self):
+        """
+        Get the Blue increment Value from the blue increment Entry / incBlueVar,
+        and convert it into a float
+        Returns the blue increment value
+        """
+        blueString = self.incBlueVar.get()
+        try:
+            incBlueValue = float(blueString)
+        except ValueError:
+            print "ChestWindow: Blue Increment Value not a valid float:Changing to 0.0"
+            self.incBlueVar.set("0.0")
+            incBlueValue = 0.0
+        return incBlueValue
+
+    def setChestLed(self):
+        """
+        Get the current values from the red/green/blue entrys (via redVar/greenVar/blueVar)
+        Call mip.setChestLed to update MiPs chest LED colour.
+        """
+        redValue = self.getRedValue()
+        greenValue = self.getGreenValue()
+        blueValue = self.getBlueValue()
+        mip.setChestLed(redValue,greenValue,blueValue)
+
+    def update(self):
+        """
+        Called when the update button is clicked.
+        Also called from main update if increments are non-zero
+        See updateChestLed
+        """
+        global updateChestLed
+
+        incRed = self.getIncRedValue()
+        incGreen = self.getIncGreenValue()
+        incBlue = self.getIncBlueValue()
+        if (incRed != 0.0) or (incGreen != 0.0) or (incBlue != 0.0):
+            updateChestLed = 1
+        else:
+            updateChestLed = 0
+        # If incRed/incGreen/incBlue are non-zero increment redVar/greenVar/blueVar
+        r = self.getRedValue()+incRed
+        g = self.getGreenValue()+incGreen
+        b = self.getBlueValue()+incBlue
+        # range check results (0..1)
+        # red 
+        if r < 0.0 :
+            if self.invertRed.get() == 1:
+                r = -r
+                self.incRedVar.set(-incRed)
+            else:
+                r += 1.0
+        if r > 1.0:
+            if self.invertRed.get() == 1:
+                r = 1.0-(r-1.0)
+                self.incRedVar.set(-incRed)
+            else:
+                r -= 1.0
+        # green
+        if g < 0.0 :
+            if self.invertGreen.get() == 1:
+                g = -g
+                self.incGreenVar.set(-incGreen)
+            else:
+                g += 1.0
+        if g > 1.0:
+            if self.invertGreen.get() == 1:
+                g = 1.0-(g-1.0)
+                self.incGreenVar.set(-incGreen)
+            else:
+                g -= 1.0
+        # blue
+        if b < 0.0 :
+            if self.invertBlue.get() == 1:
+                b = -b
+                self.incBlueVar.set(-incBlue)
+            else:
+                b += 1.0
+        if b > 1.0:
+            if self.invertBlue.get() == 1:
+                b = 1.0-(b-1.0)
+                self.incBlueVar.set(-incBlue)
+            else:
+                b -= 1.0
+        # update rgb
+        self.redVar.set(r)
+        self.greenVar.set(g)
+        self.blueVar.set(b)
+        # set chest LED
+        self.setChestLed()
+
+    def setColour(self,r,g,b):
+        """
+        Set the Chest LED to a set colour.
+        This routine called from a button
+        """
+        # update rgb text boxes
+        self.redVar.set(r)
+        self.greenVar.set(g)
+        self.blueVar.set(b)
+        # set chest LED
+        self.setChestLed()
+
+
+    def startChestWindow(self):
+        self.title("Chest LED Window")
+        self.geometry("350x225")
+        chestMenubar = Menu(self)
+        chestFileMenu = Menu(chestMenubar, tearoff=0)
+        chestFileMenu.add_command(label="Exit", command=self.destroy)
+        chestMenubar.add_cascade(label="File", menu=chestFileMenu)
+        self.config(menu=chestMenubar)
+        chestFrame = Frame(self)
+        chestFrame.pack()
+        self.redVar = StringVar()
+        self.redVar.set("0.0")
+        self.greenVar = StringVar()
+        self.greenVar.set("1.0")
+        self.blueVar = StringVar()
+        self.blueVar.set("0.0")
+        redLabel = Label(chestFrame, text = "Red(0..1):")
+        redLabel.grid(column=1,row=1)
+        greenLabel = Label(chestFrame, text = "Green(0..1):")
+        greenLabel.grid(column=2,row=1)
+        blueLabel = Label(chestFrame, text = "Blue(0..1):")
+        blueLabel.grid(column=3,row=1)
+        redEntry = Entry(chestFrame, textvariable=self.redVar, width=4)
+        redEntry.grid(column=1,row=2)
+        greenEntry = Entry(chestFrame, textvariable=self.greenVar, width=4)
+        greenEntry.grid(column=2,row=2)
+        blueEntry = Entry(chestFrame, textvariable=self.blueVar, width=4)
+        blueEntry.grid(column=3,row=2)
+        updateButton = Button(chestFrame, text = "Update", command = self.update)
+        updateButton.grid(column=2,row=3)
+        incrementLabel = Label(chestFrame, text = "Increment")
+        incrementLabel.grid(column=2,row=4)
+        self.incRedVar = StringVar()
+        self.incRedVar.set("0.0")
+        self.incGreenVar = StringVar()
+        self.incGreenVar.set("0.0")
+        self.incBlueVar = StringVar()
+        self.incBlueVar.set("0.0")
+        incRedEntry = Entry(chestFrame, textvariable=self.incRedVar, width=4)
+        incRedEntry.grid(column=1,row=5)
+        incGreenEntry = Entry(chestFrame, textvariable=self.incGreenVar, width=4)
+        incGreenEntry.grid(column=2,row=5)
+        incBlueEntry = Entry(chestFrame, textvariable=self.incBlueVar, width=4)
+        incBlueEntry.grid(column=3,row=5)
+        self.invertRed = IntVar()
+        invertRedCheckButton = Checkbutton(chestFrame,text = "Invert",variable = self.invertRed,onvalue = 1,offvalue = 0)
+        invertRedCheckButton.grid(column=1,row=6)
+        self.invertGreen = IntVar()
+        invertGreenCheckButton = Checkbutton(chestFrame,text = "Invert",variable = self.invertGreen,
+                                             onvalue = 1,offvalue = 0)
+        invertGreenCheckButton.grid(column=2,row=6)
+        self.invertBlue = IntVar()
+        invertBlueCheckButton = Checkbutton(chestFrame,text = "Invert",variable = self.invertBlue,onvalue = 1,offvalue = 0)
+        invertBlueCheckButton.grid(column=3,row=6)
+        redButton = Button(chestFrame, text = "Red", command = lambda: self.setColour(1.0,0.0,0.0))
+        redButton.grid(column=1,row=7)
+        greenButton = Button(chestFrame, text = "Green", command = lambda: self.setColour(0.0,1.0,0.0))
+        greenButton.grid(column=2,row=7)
+        blueButton = Button(chestFrame, text = "Blue", command = lambda: self.setColour(0.0,0.0,1.0))
+        blueButton.grid(column=3,row=7)
+        yellowButton = Button(chestFrame, text = "Yellow", command = lambda: self.setColour(1.0,1.0,0.0))
+        yellowButton.grid(column=1,row=8)
+        cyanButton = Button(chestFrame, text = "Cyan", command = lambda: self.setColour(0.0,1.0,1.0))
+        cyanButton.grid(column=2,row=8)
+        magentaButton = Button(chestFrame, text = "Magenta", command = lambda: self.setColour(1.0,0.0,1.0))
+        magentaButton.grid(column=3,row=8)
+        blackButton = Button(chestFrame, text = "Black", command = lambda: self.setColour(0.0,0.0,0.0))
+        blackButton.grid(column=1,row=9)
+        whiteButton = Button(chestFrame, text = "White", command = lambda: self.setColour(1.0,1.0,1.0))
+        whiteButton.grid(column=3,row=9)
+
+
 class TelemetryWindow(Toplevel):
     """
     Class to manage and control the mode dialog. Used for chagning MiPs mode in and out of App.
@@ -470,12 +732,20 @@ def startEyesWindow():
     """
     eyesWindow = EyesWindow()
 
+def startChestWindow():
+    """
+    Manage the Chest LED control window
+    """
+    global chestWindow
+    chestWindow = ChestWindow()
+
 def updateLoop():
     """
     Top-level update loop.
     Called by Tk every 50ms
-    Currenly just calls updateMovement to drive MiP in continuous drive mode,
-    if applicable
+    Calls updateMovement to drive MiP in continuous drive mode if applicable
+    Updates Telemetry data if the telemetry window is open
+    Updates Chest LED if increments are set
     """
     global updateTelemetry
     global lastOrientationUpdateTime
@@ -484,6 +754,7 @@ def updateLoop():
     global distanceValueLabel
     global batteryValueLabel
     global orientationValueLabel
+    global updateChestLed
 
     updateMovement()
     thisTime = time.time()
@@ -516,7 +787,19 @@ def updateLoop():
 #            batteryValueLabel.config(text=str(batteryLevel))
             batteryValueLabel.config(text=("%.2f" % batteryLevel).strip())
             lastBatteryUpdateTime = thisTime
-    root.after(50,updateLoop)
+    if updateChestLed == 1:
+        chestWindow.update()
+    finishTime = time.time()
+    # calculate elapsed time in milliseconds
+    elapsedTime = (int)((finishTime-thisTime)*1000.0)
+    # nextUpdateTime in milliseconds
+    nextUpdateTime = (int)(50-elapsedTime)
+    # make sure we pause at least 1ms
+    if nextUpdateTime < 1:
+        nextUpdateTime = 1
+    if elapsedTime > 1:
+        logging.debug('updateLoop: elapsed time %d ms, next update in %d ms' % (elapsedTime,nextUpdateTime))
+    root.after(nextUpdateTime,updateLoop)
 
 def updateMovement():
     """
@@ -558,6 +841,7 @@ if __name__ == '__main__':
     windowMenu.add_command(label="Telemetry", command=startTelemetryWindow)
     windowMenu.add_command(label="Mode", command=startModeWindow)
     windowMenu.add_command(label="Eyes", command=startEyesWindow)
+    windowMenu.add_command(label="Chest", command=startChestWindow)
     menubar.add_cascade(label="Window", menu=windowMenu)
     root.config(menu=menubar)
 
